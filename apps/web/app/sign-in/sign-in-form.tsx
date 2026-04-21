@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function SignInForm(props: { nextPath: string }) {
+export function SignInForm(props: { nextPath: string; signUpHref: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,6 +68,12 @@ export function SignInForm(props: { nextPath: string }) {
       >
         {pending ? "Signing in…" : "Sign in"}
       </button>
+      <Link
+        href={props.signUpHref}
+        className="block w-full rounded-lg border border-trap-sky-200 bg-white py-2.5 text-center text-sm font-semibold text-trap-navy-900 hover:bg-trap-sky-50"
+      >
+        Sign up
+      </Link>
     </form>
   );
 }
