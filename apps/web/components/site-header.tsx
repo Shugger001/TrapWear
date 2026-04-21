@@ -14,6 +14,9 @@ export async function SiteHeader() {
           <Link href="/products" className="hover:text-trap-sky-600">
             Shop
           </Link>
+          <Link href="/admin" className="hover:text-trap-sky-600">
+            Admin
+          </Link>
           <Link href="/cart" className="hover:text-trap-sky-600">
             Cart
           </Link>
