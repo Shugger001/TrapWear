@@ -129,6 +129,9 @@ Each app includes a **`vercel.json`** so installs run from the **repository root
 
 In the Vercel project, add the same env vars you use locally (at minimum **`DATABASE_URL`**, **`ADMIN_JWT_SECRET`** for admin, **`PAYSTACK_*`** / **`CUSTOMER_JWT_SECRET`** for web, etc.) for **Production** and **Preview**, and ensure they are available at **build** time where the app reads them (Next loads `apps/<app>/.env.local` only on your machine; use the Vercel Environment Variables UI instead).
 
+If the build fails during **`pnpm install`** on **`sharp`** (Next.js / `next/image`), this repo declares **`sharp`** on both apps and uses a root **`.npmrc`** hoist pattern so Linux installs can fetch prebuilt binaries reliably. If it still fails, try raising Node’s memory for install: set Vercel **Install Command** to  
+`cd ../.. && corepack enable && NODE_OPTIONS=--max-old-space-size=6144 pnpm install --frozen-lockfile` (keep the same `cd ../..` pattern as in `vercel.json`).
+
 ## Security notes
 
 - Admin sessions are **signed JWTs** in an httpOnly cookie (`trapwear_admin`). Set a strong `ADMIN_JWT_SECRET` in production.
