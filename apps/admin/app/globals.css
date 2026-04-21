@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-trap-sky-50: #f0f9ff;
+  --color-trap-sky-100: #e0f2fe;
+  --color-trap-sky-600: #0284c7;
+  --color-trap-navy-900: #0f172a;
+}
+
+@layer base {
+  body {
+    @apply bg-trap-sky-50 text-trap-navy-900 antialiased;
+  }
+}

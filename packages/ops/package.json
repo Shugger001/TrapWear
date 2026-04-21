@@ -1,0 +1,17 @@
+{
+  "name": "@trapwear/ops",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@trapwear/db": "workspace:*",
+    "drizzle-orm": "^0.39.3"
+  },
+  "devDependencies": {
+    "@trapwear/config": "workspace:*",
+    "typescript": "^5.7.3"
+  }
+}

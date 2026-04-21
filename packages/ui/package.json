@@ -1,0 +1,19 @@
+{
+  "name": "@trapwear/ui",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": ["./src/globals.css"],
+  "exports": {
+    ".": "./src/index.ts",
+    "./globals.css": "./src/globals.css"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@trapwear/config": "workspace:*",
+    "@types/react": "^19.0.10",
+    "typescript": "^5.7.3"
+  }
+}

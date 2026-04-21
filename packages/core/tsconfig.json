@@ -1,0 +1,4 @@
+{
+  "extends": "@trapwear/config/tsconfig.json",
+  "include": ["src/**/*.ts"]
+}

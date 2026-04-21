@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Footwear illustration">
+  <defs>
+    <linearGradient id="s" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#e0f2fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#s)"/>
+  <path fill="#0f172a" opacity="0.85" d="M160 360c120-40 260-20 420 20l40 60c-180-60-340-70-460-10z"/>
+  <path fill="#0ea5e9" opacity="0.55" d="M200 330c140-50 300-30 430 30l10 40c-150-70-310-90-440-20z"/>
+  <text x="400" y="520" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" fill="#0c4a6e" opacity="0.55">TrapWear Footwear</text>
+</svg>
