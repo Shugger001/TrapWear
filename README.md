@@ -121,6 +121,14 @@ Under **Inventory** (`/inventory`), staff can adjust variant stock by SKU with a
 - `pnpm db:studio` — open Drizzle Studio
 - `pnpm e2e` — Playwright smoke tests (requires dev servers + DB)
 
+## Deploying on Vercel (pnpm monorepo)
+
+Create **one Vercel project per app** (`apps/web`, `apps/admin`) and set **Root Directory** in the project settings to that folder (e.g. `apps/admin`).
+
+Each app includes a **`vercel.json`** so installs run from the **repository root**: workspace packages like `@trapwear/db` resolve correctly. Do **not** rely on the default `pnpm install` run only inside `apps/admin` — it will break `workspace:*` dependencies.
+
+In the Vercel project, add the same env vars you use locally (at minimum **`DATABASE_URL`**, **`ADMIN_JWT_SECRET`** for admin, **`PAYSTACK_*`** / **`CUSTOMER_JWT_SECRET`** for web, etc.) for **Production** and **Preview**, and ensure they are available at **build** time where the app reads them (Next loads `apps/<app>/.env.local` only on your machine; use the Vercel Environment Variables UI instead).
+
 ## Security notes
 
 - Admin sessions are **signed JWTs** in an httpOnly cookie (`trapwear_admin`). Set a strong `ADMIN_JWT_SECRET` in production.
