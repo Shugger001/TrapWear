@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd ../.. && corepack enable && NODE_OPTIONS=--max-old-space-size=6144 pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm exec turbo build --filter=@trapwear/admin"
+  "installCommand": "cd ../.. && corepack enable && NODE_OPTIONS=--max-old-space-size=8192 pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm --filter @trapwear/admin run build"
 }

@@ -127,10 +127,13 @@ Create **one Vercel project per app** (`apps/web`, `apps/admin`) and set **Root 
 
 Each app includes a **`vercel.json`** so installs run from the **repository root**: workspace packages like `@trapwear/db` resolve correctly. Do **not** rely on the default `pnpm install` run only inside `apps/admin` — it will break `workspace:*` dependencies.
 
+The repo root **`.npmrc`** sets **`node-linker=hoisted`**, which matches how Vercel’s Linux builders expect **`node_modules`** and avoids many **`sharp`** / native postinstall failures with pnpm. The storefront **`next.config.ts`** sets **`images.unoptimized: true`** so production does not depend on Sharp-based optimization.
+
 In the Vercel project, add the same env vars you use locally (at minimum **`DATABASE_URL`**, **`ADMIN_JWT_SECRET`** for admin, **`PAYSTACK_*`** / **`CUSTOMER_JWT_SECRET`** for web, etc.) for **Production** and **Preview**, and ensure they are available at **build** time where the app reads them (Next loads `apps/<app>/.env.local` only on your machine; use the Vercel Environment Variables UI instead).
 
-If the build fails during **`pnpm install`** on **`sharp`** (Next.js / `next/image`), this repo declares **`sharp`** on both apps and uses a root **`.npmrc`** hoist pattern so Linux installs can fetch prebuilt binaries reliably. If it still fails, try raising Node’s memory for install: set Vercel **Install Command** to  
-`cd ../.. && corepack enable && NODE_OPTIONS=--max-old-space-size=6144 pnpm install --frozen-lockfile` (keep the same `cd ../..` pattern as in `vercel.json`).
+### If the deploy UI says “Detected Turbo” but the build still fails
+
+Vercel may **ignore** `vercel.json` and run its own install. Open **Settings → General → Build & Development Settings**, turn **Override** on for **Install Command** and **Build Command**, and paste the two lines from the **`vercel.json`** inside that app folder (`installCommand` then `buildCommand`). The install line must start with **`cd ../.. &&`** so pnpm runs from the monorepo root.
 
 ## Security notes
 
