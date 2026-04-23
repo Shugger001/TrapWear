@@ -13,6 +13,14 @@ import { cookies } from "next/headers";
 
 const bodySchema = z.object({
   email: z.string().email().optional(),
+  name: z.string().min(1).max(120).optional(),
+  phone: z.string().min(3).max(40).optional(),
+  addressLine1: z.string().min(1).max(200).optional(),
+  addressLine2: z.string().max(200).optional(),
+  city: z.string().min(1).max(120).optional(),
+  state: z.string().max(120).optional(),
+  postalCode: z.string().max(40).optional(),
+  country: z.string().min(2).max(80).optional(),
   couponCode: z.string().optional(),
 });
 
@@ -74,6 +82,16 @@ export async function POST(req: Request) {
   const customer = await getCustomerFromSession();
   const emailForOrder =
     (parsed.data.email?.trim() || customer?.email) ?? "pending@trapwear.local";
+  const shippingAddress = {
+    name: parsed.data.name?.trim() ?? "",
+    phone: parsed.data.phone?.trim() ?? "",
+    line1: parsed.data.addressLine1?.trim() ?? "",
+    line2: parsed.data.addressLine2?.trim() ?? "",
+    city: parsed.data.city?.trim() ?? "",
+    state: parsed.data.state?.trim() ?? "",
+    postalCode: parsed.data.postalCode?.trim() ?? "",
+    country: parsed.data.country?.trim() ?? "",
+  };
 
   const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -117,6 +135,7 @@ export async function POST(req: Request) {
           shippingCents,
           taxCents,
           totalCents,
+          shippingAddress,
         })
         .returning();
 
@@ -190,6 +209,11 @@ export async function POST(req: Request) {
     metadata: {
       order_id: result.id,
       cart_id: cartId,
+      customer_name: shippingAddress.name,
+      customer_phone: shippingAddress.phone,
+      shipping_line1: shippingAddress.line1,
+      shipping_city: shippingAddress.city,
+      shipping_country: shippingAddress.country,
     },
   });
 

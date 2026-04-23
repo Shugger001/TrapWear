@@ -4,6 +4,8 @@ import { orders } from "@trapwear/db";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getCustomerFromSession } from "@/lib/customer-session";
+import { formatMoneyCents } from "@/lib/money";
+import { UserAvatar } from "@/components/user-avatar";
 import { AccountLogout } from "./account-logout";
 
 export default async function AccountPage() {
@@ -22,12 +24,15 @@ export default async function AccountPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-3">
+          <UserAvatar name={customer.name} email={customer.email} />
+          <div>
           <h1 className="text-2xl font-semibold text-trap-navy-900">Your account</h1>
           <p className="text-sm text-trap-navy-900/70">
             {customer.name ? `${customer.name} · ` : null}
             {customer.email}
           </p>
+          </div>
         </div>
         <AccountLogout />
       </div>
@@ -49,7 +54,7 @@ export default async function AccountPage() {
                 <tr key={o.id}>
                   <td className="py-3 font-mono text-xs">{o.id.slice(0, 8)}…</td>
                   <td className="py-3">{o.status}</td>
-                  <td className="py-3">${(o.totalCents / 100).toFixed(2)}</td>
+                  <td className="py-3">{formatMoneyCents(o.totalCents)}</td>
                   <td className="py-3 text-trap-navy-900/70">{o.createdAt.toISOString().slice(0, 10)}</td>
                 </tr>
               ))}

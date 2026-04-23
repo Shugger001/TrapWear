@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import { formatMoneyCents } from "@/lib/money";
 
 type Layer = { id: string; label: string; surchargeCents: number };
 
@@ -9,12 +10,15 @@ export function ProductAddForm(props: {
   variantIds: { id: string; label: string }[];
   customizationLayers: Layer[] | null;
   productName: string;
+  allowPersonalization?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [variantId, setVariantId] = useState(props.variantIds[0]?.id ?? "");
   const [qty, setQty] = useState(1);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [customName, setCustomName] = useState("");
+  const [customNumber, setCustomNumber] = useState("");
 
   const surcharge = useMemo(() => {
     if (!props.customizationLayers) return 0;
@@ -30,6 +34,13 @@ export function ProductAddForm(props: {
     if (!variantId) return;
 
     const selectedLayers = props.customizationLayers?.filter((l) => selected[l.id]).map((l) => l.id) ?? [];
+    const personalization =
+      props.allowPersonalization && (customName.trim() || customNumber.trim())
+        ? {
+            customName: customName.trim() || undefined,
+            customNumber: customNumber.trim() || undefined,
+          }
+        : {};
 
     startTransition(async () => {
       const res = await fetch("/api/cart", {
@@ -38,8 +49,10 @@ export function ProductAddForm(props: {
         body: JSON.stringify({
           variantId,
           quantity: qty,
-          customization:
-            selectedLayers.length > 0 ? { selectedLayers } : {},
+          customization: {
+            ...(selectedLayers.length > 0 ? { selectedLayers } : {}),
+            ...personalization,
+          },
         }),
       });
       if (!res.ok) {
@@ -106,15 +119,41 @@ export function ProductAddForm(props: {
                   />
                   {layer.label}
                 </span>
-                <span className="text-trap-navy-900/70">+${(layer.surchargeCents / 100).toFixed(2)}</span>
+                <span className="text-trap-navy-900/70">+{formatMoneyCents(layer.surchargeCents)}</span>
               </label>
             ))}
           </div>
           {surcharge > 0 ? (
             <p className="text-xs text-trap-sky-800">
-              Customization add-on: <span className="font-semibold">${(surcharge / 100).toFixed(2)}</span>
+              Customization add-on: <span className="font-semibold">{formatMoneyCents(surcharge)}</span>
             </p>
           ) : null}
+        </div>
+      ) : null}
+
+      {props.allowPersonalization ? (
+        <div className="space-y-3 rounded-xl border border-trap-sky-200 bg-white p-4">
+          <p className="text-sm font-semibold text-trap-navy-900">Personalization</p>
+          <p className="text-xs text-trap-navy-900/70">
+            Optional for jerseys: add player name and shirt number.
+          </p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <input
+              className="rounded-lg border border-trap-sky-200 px-3 py-2 text-sm"
+              placeholder="Name on jersey"
+              maxLength={20}
+              value={customName}
+              onChange={(e) => setCustomName(e.target.value)}
+            />
+            <input
+              className="rounded-lg border border-trap-sky-200 px-3 py-2 text-sm"
+              placeholder="Number"
+              inputMode="numeric"
+              maxLength={2}
+              value={customNumber}
+              onChange={(e) => setCustomNumber(e.target.value.replace(/[^0-9]/g, ""))}
+            />
+          </div>
         </div>
       ) : null}
 

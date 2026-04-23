@@ -1,9 +1,8 @@
 import { eq } from "drizzle-orm";
 import { auditLogs, featureFlags } from "@trapwear/db";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { ADMIN_COOKIE, verifyAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { db } from "@/lib/db";
 
 const bodySchema = z.object({
@@ -18,22 +17,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_COOKIE)?.value;
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let session: { userId: string; role: string };
-  try {
-    session = await verifyAdminSession(token);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (session.role !== "superadmin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const auth = await requireAdminSession("superadmin");
+  if ("error" in auth) return auth.error;
+  const { session } = auth;
 
   const [existing] = await db
     .select()

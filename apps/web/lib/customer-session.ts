@@ -8,6 +8,7 @@ export async function getCustomerFromSession(): Promise<{
   userId: string;
   email: string;
   name: string | null;
+  role: string;
 } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(CUSTOMER_COOKIE)?.value;
@@ -15,8 +16,8 @@ export async function getCustomerFromSession(): Promise<{
   try {
     const { userId } = await verifyCustomerSession(token);
     const [u] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-    if (!u || u.role !== "customer") return null;
-    return { userId: u.id, email: u.email, name: u.name };
+    if (!u) return null;
+    return { userId: u.id, email: u.email, name: u.name, role: u.role };
   } catch {
     return null;
   }

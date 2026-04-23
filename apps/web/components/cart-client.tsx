@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { CartLineView } from "@/lib/cart";
+import { formatMoneyCents } from "@/lib/money";
 
 type CouponPreview = {
   code: string;
@@ -18,12 +19,14 @@ type CouponPreview = {
 };
 
 export function CartClient(props: {
+  paystackReady?: boolean;
   lines: CartLineView[];
   subtotalCents: number;
   shippingCents: number;
   taxCents: number;
   totalCents: number;
 }) {
+  const paystackReady = props.paystackReady ?? true;
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -73,27 +76,6 @@ export function CartClient(props: {
     });
   }
 
-  async function checkout() {
-    startTransition(async () => {
-      setError(null);
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          couponCode: preview?.code,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data.error ?? "Checkout failed");
-        return;
-      }
-      if (data.url) {
-        window.location.href = data.url as string;
-      }
-    });
-  }
-
   return (
     <div className="grid gap-8 md:grid-cols-3">
       <div className="space-y-4 md:col-span-2">
@@ -111,10 +93,18 @@ export function CartClient(props: {
                   Add-ons: {(line.customization.selectedLayers as string[]).join(", ")}
                 </p>
               ) : null}
+              {typeof line.customization.customName === "string" && line.customization.customName ? (
+                <p className="mt-1 text-xs text-trap-navy-900/70">
+                  Name: {line.customization.customName}
+                </p>
+              ) : null}
+              {typeof line.customization.customNumber === "string" && line.customization.customNumber ? (
+                <p className="text-xs text-trap-navy-900/70">Number: {line.customization.customNumber}</p>
+              ) : null}
             </div>
             <div className="flex items-end justify-between gap-6 md:flex-col md:items-end">
               <p className="text-sm font-semibold text-trap-navy-900">
-                ${(line.lineTotalCents / 100).toFixed(2)}
+                {formatMoneyCents(line.lineTotalCents)}
               </p>
               <button
                 type="button"
@@ -162,48 +152,56 @@ export function CartClient(props: {
             </button>
           </p>
         ) : (
-          <p className="text-xs text-trap-navy-900/60">Try seeded code WELCOME10 (min. $50 cart before discount).</p>
+          <p className="text-xs text-trap-navy-900/60">Try seeded code WELCOME10 (min. GH₵50 cart before discount).</p>
         )}
 
         <p className="text-sm font-semibold text-trap-navy-900">Summary</p>
         <div className="space-y-2 text-sm text-trap-navy-900/80">
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>${(display.subtotalBeforeDiscountCents / 100).toFixed(2)}</span>
+            <span>{formatMoneyCents(display.subtotalBeforeDiscountCents)}</span>
           </div>
           {display.discountCents > 0 ? (
             <div className="flex justify-between text-trap-sky-800">
               <span>Discount</span>
-              <span>−${(display.discountCents / 100).toFixed(2)}</span>
+              <span>−{formatMoneyCents(display.discountCents)}</span>
             </div>
           ) : null}
           <div className="flex justify-between">
             <span>Shipping</span>
-            <span>${(display.shippingCents / 100).toFixed(2)}</span>
+            <span>{formatMoneyCents(display.shippingCents)}</span>
           </div>
           <div className="flex justify-between">
             <span>Est. tax</span>
-            <span>${(display.taxCents / 100).toFixed(2)}</span>
+            <span>{formatMoneyCents(display.taxCents)}</span>
           </div>
           <div className="flex justify-between border-t border-trap-sky-200 pt-3 text-base font-semibold text-trap-navy-900">
             <span>Total</span>
-            <span>${(display.totalCents / 100).toFixed(2)}</span>
+            <span>{formatMoneyCents(display.totalCents)}</span>
           </div>
         </div>
 
         {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
-        <button
-          type="button"
-          onClick={checkout}
-          disabled={pending}
-          className="inline-flex w-full items-center justify-center rounded-lg bg-trap-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-trap-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {pending ? "Redirecting…" : "Pay with Paystack"}
-        </button>
-
+        {paystackReady ? (
+          <Link
+            href={preview?.code ? `/checkout?coupon=${encodeURIComponent(preview.code)}` : "/checkout"}
+            className="inline-flex w-full items-center justify-center rounded-lg bg-trap-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-trap-sky-500"
+          >
+            Proceed to checkout
+          </Link>
+        ) : (
+          <span
+            className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-lg border border-trap-sky-200 bg-trap-sky-50 px-5 py-2.5 text-sm font-semibold text-trap-navy-900/50"
+            title="Add PAYSTACK_SECRET_KEY to enable checkout"
+          >
+            Checkout unavailable
+          </span>
+        )}
         <p className="text-xs text-trap-navy-900/60">
-          You’ll be redirected to Paystack to complete payment. Totals are calculated on the server from your cart.
+          {paystackReady
+            ? "Enter shipping/contact details on the checkout page, then continue to Paystack."
+            : "Checkout opens once Paystack keys are configured in the environment."}
         </p>
 
         <Link href="/products" className="block text-center text-sm font-medium text-trap-sky-800 hover:text-trap-sky-700">

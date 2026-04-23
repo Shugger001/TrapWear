@@ -17,6 +17,13 @@
     @apply antialiased;
   }
   body {
-    @apply bg-trap-sky-50 text-trap-navy-900 min-h-screen;
+    @apply text-trap-navy-900 min-h-screen;
+    background-color: #dbeafe;
+    background-image:
+      linear-gradient(180deg, rgba(239, 246, 255, 0.78), rgba(224, 242, 254, 0.72)),
+      url("https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=2200&q=80");
+    background-size: cover, cover;
+    background-attachment: fixed, fixed;
+    background-position: center, center;
   }
 }

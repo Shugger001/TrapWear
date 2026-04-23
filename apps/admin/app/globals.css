@@ -5,10 +5,67 @@
   --color-trap-sky-100: #e0f2fe;
   --color-trap-sky-600: #0284c7;
   --color-trap-navy-900: #0f172a;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+@keyframes admin-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@layer utilities {
+  .admin-animate-in {
+    animation: admin-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .admin-delay-1 {
+    animation-delay: 80ms;
+  }
+  .admin-delay-2 {
+    animation-delay: 160ms;
+  }
+  .admin-delay-3 {
+    animation-delay: 240ms;
+  }
+  .admin-delay-4 {
+    animation-delay: 320ms;
+  }
+  .admin-shimmer-text {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.95) 45%,
+      rgba(255, 255, 255, 0.55) 90%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: admin-shimmer 4s ease-in-out infinite;
+  }
 }
 
 @layer base {
   body {
-    @apply bg-trap-sky-50 text-trap-navy-900 antialiased;
+    @apply bg-slate-950 text-slate-100;
+  }
+  button,
+  a[role="button"] {
+    touch-action: manipulation;
   }
 }

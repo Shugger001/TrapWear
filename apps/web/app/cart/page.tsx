@@ -2,8 +2,10 @@ import Link from "next/link";
 import { cartTotals } from "@/lib/cart";
 import { getCartIdFromCookie } from "@/lib/cart-cookie";
 import { CartClient } from "@/components/cart-client";
+import { isPaystackConfigured } from "@/lib/paystack";
 
 export default async function CartPage() {
+  const paystackReady = isPaystackConfigured();
   const cartId = await getCartIdFromCookie();
   const totals = cartId
     ? await cartTotals(cartId)
@@ -34,6 +36,7 @@ export default async function CartPage() {
         </div>
       ) : (
         <CartClient
+          paystackReady={paystackReady}
           lines={totals.lines}
           subtotalCents={totals.subtotalCents}
           shippingCents={totals.shippingCents}

@@ -12,61 +12,52 @@ export default async function HomePage() {
         </div>
       ) : null}
 
-      <section className="grid gap-10 rounded-2xl bg-gradient-to-br from-white via-trap-sky-50 to-trap-sky-100 p-10 shadow-sm md:grid-cols-2 md:items-center">
-        <div className="space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-trap-sky-600">
-            TrapWear
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-trap-navy-900 md:text-5xl">
-            Jerseys engineered for the pitch. Footwear built for the city.
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-trap-sky-50 to-trap-sky-100 p-10 shadow-sm">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27320%27 height=%27320%27 viewBox=%270 0 320 320%27%3E%3Crect width=%27320%27 height=%27320%27 fill=%27none%27/%3E%3Cg fill=%27none%27 stroke=%27%230284c7%27 stroke-opacity=%270.25%27 stroke-width=%276%27%3E%3Cpath d=%27M56 84l38-22 30 18v36l-26 18H74l-18-20z%27/%3E%3Cpath d=%27M232 196c18-26 46-30 60-16 8 8 8 24-6 40-14 16-36 26-62 20l-16 18-16-8 14-18c-4-14 6-24 26-36z%27/%3E%3C/g%3E%3C/svg%3E")',
+            backgroundSize: "260px 260px",
+            backgroundPosition: "center",
+          }}
+        />
+        <div className="relative">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-trap-sky-600">TrapWear</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-trap-navy-900 md:text-5xl">
+            Choose a category
           </h1>
-          <p className="text-lg text-trap-navy-900/80">
-            Premium soccer kits with TrapWear personalization, plus a focused lineup of men’s footwear
-            designed for everyday wear.
+          <p className="mt-3 max-w-3xl text-lg text-trap-navy-900/80">
+            Start from one of the two product categories below.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/products"
-              className="inline-flex items-center justify-center rounded-lg bg-trap-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-trap-sky-500"
-            >
-              Shop the collection
-            </Link>
-            <Link
-              href="/products#jerseys"
-              className="inline-flex items-center justify-center rounded-lg border border-trap-sky-300 bg-white px-5 py-2.5 text-sm font-semibold text-trap-navy-900 hover:bg-trap-sky-50"
-            >
-              Explore jerseys
-            </Link>
-          </div>
-        </div>
-        <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-trap-sky-200 bg-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,#bae6fd_0%,transparent_55%),radial-gradient(circle_at_80%_60%,#e0f2fe_0%,transparent_50%)]" />
-          <div className="relative flex h-full flex-col items-center justify-center gap-2 p-8 text-center">
-            <span className="text-sm font-medium text-trap-sky-900">Velocity Pro</span>
-            <span className="text-3xl font-semibold text-trap-navy-900">Home kit</span>
-            <span className="text-sm text-trap-navy-900/70">Moisture-wicking · Custom name & number</span>
-          </div>
         </div>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid gap-6 md:grid-cols-2">
         {[
           {
-            title: "Guided customization",
-            body: "Layered options with live pricing — validated on the server before you pay.",
+            title: "Jerseys",
+            body: "Soccer kits with TrapWear customization and match-ready materials.",
+            href: "/products#jerseys",
+            cta: "Go to Jerseys",
           },
           {
-            title: "Operations-ready",
-            body: "Orders, inventory, and audit trails wired for a serious retail team.",
+            title: "Footwear",
+            body: "Lifestyle and performance footwear with brand search in one place.",
+            href: "/products#footwear",
+            cta: "Go to Footwear",
           },
-          {
-            title: "Performance-first",
-            body: "Lean storefront routes with server-side totals and Stripe Checkout.",
-          },
-        ].map((c) => (
-          <div key={c.title} className="rounded-xl border border-trap-sky-200 bg-white p-5 shadow-sm">
-            <h2 className="text-base font-semibold text-trap-navy-900">{c.title}</h2>
-            <p className="mt-2 text-sm text-trap-navy-900/75">{c.body}</p>
+        ].map((category) => (
+          <div key={category.title} className="rounded-2xl border border-trap-sky-200 bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-semibold text-trap-navy-900">{category.title}</h2>
+            <p className="mt-2 text-sm text-trap-navy-900/75">{category.body}</p>
+            <Link
+              href={category.href}
+              className="mt-5 inline-flex items-center justify-center rounded-lg bg-trap-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-trap-sky-500"
+            >
+              {category.cta}
+            </Link>
           </div>
         ))}
       </section>

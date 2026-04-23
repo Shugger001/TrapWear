@@ -18,6 +18,12 @@ TrapWear is a production-shaped ecommerce monorepo: a **Next.js storefront** (`a
 
 Skip **docker compose** for Postgres in the steps below if you use Supabase.
 
+### Supabase Storage (admin product images)
+
+When **`NEXT_PUBLIC_SUPABASE_URL`**, **`SUPABASE_SERVICE_ROLE_KEY`**, and a **`SUPABASE_PRODUCT_IMAGES_BUCKET`** (default `product-images`) are set in **`apps/admin/.env.local`**, the admin **Products** screen can upload JPEG/PNG/Webp files to that bucket. Product `images` in the database must be either **site-relative paths** (e.g. `/images/...`) or **HTTPS URLs** on your Supabase project’s **public** storage objects (`/storage/v1/object/public/...`), plus any optional **`ALLOWED_IMAGE_URL_PREFIXES`**.
+
+In the Supabase dashboard: **Storage → New bucket** (name matches env). For catalog images, enable **public read** on that bucket so the storefront can load URLs without signing; restrict **writes** to the service role (no anonymous insert). The admin app uploads **through** `POST /api/uploads/product-image` using the service role key only on the server.
+
 ## Quick start
 
 1. Copy environment variables:
@@ -69,7 +75,7 @@ pnpm dev
 
 1. Root **`.env`** from **`.env.example`** (used for `pnpm db:push` / `pnpm db:seed`); set **`DATABASE_URL`** (e.g. Supabase URI) then **`pnpm env:sync-db`**.
 2. **`apps/web/.env.local`**: **`PAYSTACK_SECRET_KEY`**, **`PAYSTACK_CURRENCY`**, **`CUSTOMER_JWT_SECRET`** (≥32 chars), optional **`RESEND_API_KEY`** / **`RESEND_FROM`**, **`CRON_SECRET`** if you call the sweep HTTP endpoint. **`DATABASE_URL`** is synced from root **`.env`** via **`pnpm env:sync-db`**.
-3. **`apps/admin/.env.local`**: **`ADMIN_JWT_SECRET`**, same **`STALE_CHECKOUT_MINUTES`** as web for Operations sweep; **`DATABASE_URL`** synced like above.
+3. **`apps/admin/.env.local`**: **`ADMIN_JWT_SECRET`**, same **`STALE_CHECKOUT_MINUTES`** as web for Operations sweep; **`DATABASE_URL`** synced like above. Optional: **Supabase image** vars (`NEXT_PUBLIC_SUPABASE_URL`, **`SUPABASE_SERVICE_ROLE_KEY`**, bucket name) for product uploads — see **Supabase Storage** above.
 4. **Paystack dashboard** → **Settings → API Keys & Webhooks** — add webhook URL `https://your-domain/api/webhooks/paystack` and enable **`charge.success`**. Signatures use the same **`PAYSTACK_SECRET_KEY`** as the API.
 
 ## Demo accounts (seed)
@@ -123,17 +129,80 @@ Under **Inventory** (`/inventory`), staff can adjust variant stock by SKU with a
 
 ## Deploying on Vercel (pnpm monorepo)
 
-Create **one Vercel project per app** (`apps/web`, `apps/admin`) and set **Root Directory** in the project settings to that folder (e.g. `apps/admin`).
+Create **one Vercel project per app** and connect the **same Git repository** to each project (e.g. storefront **`trap-wear-web`**, admin **`trapwear-admin`**).
 
-Each app includes a **`vercel.json`** so installs run from the **repository root**: workspace packages like `@trapwear/db` resolve correctly. Do **not** rely on the default `pnpm install` run only inside `apps/admin` — it will break `workspace:*` dependencies.
+### Vercel dashboard (each project)
+
+1. Open the project → **Settings** → **General**.
+2. Under **Root Directory**, set:
+   - **Storefront project:** `apps/web`
+   - **Admin project:** `apps/admin`
+3. **Build & Development Settings:** leave **Framework Preset** as **Next.js**, and either:
+   - leave **Install Command** and **Build Command** empty so Vercel uses the **`vercel.json`** next to that app, or  
+   - turn **Override** on and paste the same commands as in that app’s **`vercel.json`** (they must match).
+
+**Why `cd ../..`:** Install and build commands start from the app directory (`apps/web` or `apps/admin`). They **`cd`** to the **repository root** so pnpm sees **`pnpm-workspace.yaml`** and **`pnpm-lock.yaml`** and can resolve **`workspace:*`** packages (`@trapwear/db`, etc.). That only works when Vercel clones the **full repo** and **Root Directory** is that app folder (so the parent chain reaches the workspace root).
+
+**Copy-paste commands** (if you override in the UI):
+
+**`apps/web`**
+
+```bash
+cd ../.. && pnpm install --frozen-lockfile
+```
+
+```bash
+cd ../.. && NODE_OPTIONS=--max-old-space-size=8192 pnpm --filter @trapwear/web run build
+```
+
+**`apps/admin`**
+
+```bash
+cd ../.. && pnpm install --frozen-lockfile
+```
+
+```bash
+cd ../.. && NODE_OPTIONS=--max-old-space-size=8192 pnpm --filter @trapwear/admin run build
+```
+
+Do **not** rely on a default install that runs only inside `apps/web` or `apps/admin` without reaching the repo root — it will break **`workspace:*`** dependencies.
 
 The repo root **`.npmrc`** sets **`node-linker=hoisted`**, which matches how Vercel’s Linux builders expect **`node_modules`** and avoids many **`sharp`** / native postinstall failures with pnpm. The storefront **`next.config.ts`** sets **`images.unoptimized: true`** so production does not depend on Sharp-based optimization.
 
-In the Vercel project, add the same env vars you use locally (at minimum **`DATABASE_URL`**, **`ADMIN_JWT_SECRET`** for admin, **`PAYSTACK_*`** / **`CUSTOMER_JWT_SECRET`** for web, etc.) for **Production** and **Preview**, and ensure they are available at **build** time where the app reads them (Next loads `apps/<app>/.env.local` only on your machine; use the Vercel Environment Variables UI instead).
+In each Vercel project, add the same env vars you use locally (at minimum **`DATABASE_URL`**, **`ADMIN_JWT_SECRET`** for admin, **`PAYSTACK_*`** / **`CUSTOMER_JWT_SECRET`** for web, etc.) for **Production** and **Preview**, and ensure they are available at **build** time where the app reads them (Next loads `apps/<app>/.env.local` only on your machine; use the Vercel Environment Variables UI instead).
+
+### Git vs `vercel deploy --prebuilt`
+
+- **Git:** Vercel clones the whole repository, then runs install/build from **`apps/web`** or **`apps/admin`** with your commands → correct layout for **`cd ../..`**.
+- **`vercel deploy --prebuilt`:** easy to get wrong paths (missing Next server files, wrong cwd). Prefer **Git-triggered deployments** until builds are consistently green; only use **`--prebuilt`** after **`vercel build`** and deploy from the **same directory layout** you use in production.
+
+### Apply settings via API (optional)
+
+If the Cursor **browser** tab is not logged into Vercel (it uses a separate session from Chrome/Safari), you can PATCH both projects from your machine:
+
+1. Create a token: [Vercel → Account → Tokens](https://vercel.com/account/tokens).
+2. Run (team id defaults from `apps/admin/.vercel/project.json` → `orgId`):
+
+```bash
+export VERCEL_TOKEN="…your token…"
+node scripts/vercel-apply-monorepo-settings.mjs
+```
+
+Override the team with `VERCEL_TEAM_ID` if needed. The script updates both **`web`** and **`trap-wear-web`** if those projects exist (CLI `vercel link` from `apps/web` often uses the name **`web`**). Repo path is always **`apps/web`**. Then verify with `pnpm exec vercel project inspect` from `apps/admin` or `apps/web`.
+
+### Verify settings (CLI)
+
+After you save the dashboard, from the linked app folder run:
+
+```bash
+pnpm exec vercel project inspect
+```
+
+**Root Directory** should read **`apps/web`** or **`apps/admin`** (not **`.`** at the repository root if your install command uses **`cd ../..`** — that pattern assumes the build cwd is the app directory). **Install Command** and **Build Command** should match the **`vercel.json`** in that same folder (same commit you deploy).
 
 ### If the deploy UI says “Detected Turbo” but the build still fails
 
-Vercel may **ignore** `vercel.json` and run its own install. Open **Settings → General → Build & Development Settings**, turn **Override** on for **Install Command** and **Build Command**, and paste the two lines from the **`vercel.json`** inside that app folder (`installCommand` then `buildCommand`). The install line must start with **`cd ../.. &&`** so pnpm runs from the monorepo root.
+Vercel may **ignore** `vercel.json` and run its own install. Use the override steps above and paste the **`installCommand`** then **`buildCommand`** from the matching app’s **`vercel.json`**. The install line must start with **`cd ../.. &&`** so pnpm runs from the monorepo root.
 
 ## Security notes
 

@@ -1,6 +1,7 @@
 import { jwtVerify, SignJWT } from "jose";
 
 const COOKIE = "trapwear_admin";
+export type AdminRole = "admin" | "superadmin";
 
 function secretKey() {
   const s = process.env.ADMIN_JWT_SECRET;
@@ -10,7 +11,7 @@ function secretKey() {
   return new TextEncoder().encode(s);
 }
 
-export async function signAdminSession(userId: string, role: "admin" | "superadmin") {
+export async function signAdminSession(userId: string, role: AdminRole) {
   return new SignJWT({ role })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(userId)
@@ -25,7 +26,7 @@ export async function verifyAdminSession(token: string) {
   if (role !== "admin" && role !== "superadmin") {
     throw new Error("Invalid role");
   }
-  return { userId: payload.sub!, role };
+  return { userId: payload.sub!, role: role as AdminRole };
 }
 
 export const ADMIN_COOKIE = COOKIE;

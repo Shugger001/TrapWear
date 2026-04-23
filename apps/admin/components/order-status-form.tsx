@@ -5,7 +5,8 @@ import { useState } from "react";
 
 const statuses = ["pending_payment", "paid", "fulfilled", "cancelled"] as const;
 
-export function OrderStatusForm(props: { orderId: string; status: string }) {
+export function OrderStatusForm(props: { orderId: string; status: string; theme?: "light" | "dark" }) {
+  const dark = props.theme === "dark";
   const router = useRouter();
   const [status, setStatus] = useState(props.status);
   const [error, setError] = useState<string | null>(null);
@@ -30,19 +31,29 @@ export function OrderStatusForm(props: { orderId: string; status: string }) {
   }
 
   return (
-    <section className="rounded-2xl border border-trap-sky-100 bg-white p-6 shadow-sm">
-      <h2 className="text-sm font-semibold text-trap-navy-900">Order status</h2>
-      <p className="mt-2 text-sm text-trap-navy-900/70">
+    <section
+      className={
+        dark
+          ? "rounded-2xl border border-slate-800/90 bg-slate-900/70 p-4 shadow-xl shadow-black/25 sm:p-6"
+          : "rounded-2xl border border-trap-sky-100 bg-white p-6 shadow-sm"
+      }
+    >
+      <h2 className={`text-sm font-semibold ${dark ? "text-white" : "text-trap-navy-900"}`}>Order status</h2>
+      <p className={`mt-2 text-sm ${dark ? "text-slate-400" : "text-trap-navy-900/70"}`}>
         Updates are audited. Typical flow: paid → fulfilled (or cancelled with a policy check in real ops).
       </p>
-      <div className="mt-4 flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <label className="text-sm font-medium" htmlFor="status">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="w-full space-y-1 sm:w-auto">
+          <label className={`text-sm font-medium ${dark ? "text-slate-300" : ""}`} htmlFor="status">
             Status
           </label>
           <select
             id="status"
-            className="rounded-lg border border-trap-sky-200 bg-white px-3 py-2 text-sm"
+            className={
+              dark
+                ? "min-h-11 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-2.5 text-sm text-white sm:w-64"
+                : "rounded-lg border border-trap-sky-200 bg-white px-3 py-2 text-sm"
+            }
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
@@ -57,12 +68,16 @@ export function OrderStatusForm(props: { orderId: string; status: string }) {
           type="button"
           onClick={save}
           disabled={pending}
-          className="rounded-lg bg-trap-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-trap-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className={
+            dark
+              ? "min-h-11 w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              : "rounded-lg bg-trap-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-trap-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+          }
         >
           {pending ? "Saving…" : "Save"}
         </button>
       </div>
-      {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className={`mt-3 text-sm ${dark ? "text-red-400" : "text-red-700"}`}>{error}</p> : null}
     </section>
   );
 }

@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 
 function joinAdminUrl(base: string, pathParts: string[] | undefined): string {
   const root = base.endsWith("/") ? base.slice(0, -1) : base;
-  const path = (pathParts ?? []).map(encodeURIComponent).join("/");
+  const path = (pathParts && pathParts.length > 0 ? pathParts : ["login"])
+    .map(encodeURIComponent)
+    .join("/");
   return path ? `${root}/${path}` : root;
 }
 

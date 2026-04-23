@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCustomerFromSession } from "@/lib/customer-session";
+import { UserAvatar } from "@/components/user-avatar";
 
 export async function SiteHeader() {
   const customer = await getCustomerFromSession();
@@ -21,8 +22,9 @@ export async function SiteHeader() {
             Cart
           </Link>
           {customer ? (
-            <Link href="/account" className="hover:text-trap-sky-600">
-              Account
+            <Link href="/account" className="flex items-center gap-2 hover:text-trap-sky-600">
+              <UserAvatar name={customer.name} email={customer.email} size="sm" />
+              <span>Account</span>
             </Link>
           ) : (
             <>

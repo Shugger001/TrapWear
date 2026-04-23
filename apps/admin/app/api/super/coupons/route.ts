@@ -1,29 +1,9 @@
 import { eq } from "drizzle-orm";
 import { auditLogs, coupons } from "@trapwear/db";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { ADMIN_COOKIE, verifyAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { db } from "@/lib/db";
-
-async function requireSuperadmin(): Promise<
-  { session: { userId: string; role: string } } | { error: NextResponse }
-> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_COOKIE)?.value;
-  if (!token) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  }
-  try {
-    const session = await verifyAdminSession(token);
-    if (session.role !== "superadmin") {
-      return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-    }
-    return { session };
-  } catch {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  }
-}
 
 const createSchema = z.object({
   code: z.string().min(1).max(64),
@@ -35,7 +15,7 @@ const createSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const auth = await requireSuperadmin();
+  const auth = await requireAdminSession("superadmin");
   if ("error" in auth) return auth.error;
 
   const json = await req.json().catch(() => null);
@@ -93,7 +73,7 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(req: Request) {
-  const auth = await requireSuperadmin();
+  const auth = await requireAdminSession("superadmin");
   if ("error" in auth) return auth.error;
 
   const json = await req.json().catch(() => null);

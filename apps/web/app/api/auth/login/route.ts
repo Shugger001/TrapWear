@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
   const email = parsed.data.email.trim().toLowerCase();
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-  if (!user?.passwordHash || user.role !== "customer") {
+  if (!user?.passwordHash) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }
 

@@ -7,6 +7,11 @@ export function getPaystackSecret(): string | null {
   return s?.trim() || null;
 }
 
+/** True when hosted checkout can initialize a Paystack transaction (secret key set). */
+export function isPaystackConfigured(): boolean {
+  return getPaystackSecret() !== null;
+}
+
 /** Paystack docs: HMAC SHA512 of raw body with secret key; header `x-paystack-signature`. */
 export function verifyPaystackSignature(rawBody: string, signature: string | null, secret: string): boolean {
   if (!signature) return false;

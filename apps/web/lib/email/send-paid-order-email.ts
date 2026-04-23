@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { orderLines, orders, productVariants, products } from "@trapwear/db";
 import { db } from "@/lib/db";
 import { sendOrderConfirmationEmail } from "@/lib/email/order-confirmation";
+import { formatMoneyCents } from "@/lib/money";
 
 export async function sendPaidOrderEmailIfConfigured(orderId: string): Promise<void> {
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
@@ -23,13 +24,13 @@ export async function sendPaidOrderEmailIfConfigured(orderId: string): Promise<v
   const lines = rows.map((r) => ({
     title: `${r.productName} — ${r.variantLabel}`,
     qty: r.qty,
-    lineTotal: `$${((r.unitPriceCents * r.qty) / 100).toFixed(2)}`,
+    lineTotal: formatMoneyCents(r.unitPriceCents * r.qty),
   }));
 
   const result = await sendOrderConfirmationEmail({
     to: order.email,
     orderId: order.id,
-    totalFormatted: `$${(order.totalCents / 100).toFixed(2)}`,
+    totalFormatted: formatMoneyCents(order.totalCents),
     lines,
   });
 
