@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm";
-import { auditLogs, products } from "@trapwear/db";
+import { eq, inArray } from "drizzle-orm";
+import { auditLogs, orderLines, productVariants, products } from "@trapwear/db";
 import { zodProductImagesArray } from "@trapwear/core";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -137,6 +137,28 @@ export async function DELETE(req: Request) {
   const [existing] = await db.select().from(products).where(eq(products.id, id)).limit(1);
   if (!existing) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  }
+
+  const variants = await db
+    .select({ id: productVariants.id })
+    .from(productVariants)
+    .where(eq(productVariants.productId, id));
+  const variantIds = variants.map((r) => r.id);
+  if (variantIds.length > 0) {
+    const [ol] = await db
+      .select({ id: orderLines.id })
+      .from(orderLines)
+      .where(inArray(orderLines.variantId, variantIds))
+      .limit(1);
+    if (ol) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot delete this product: it appears on at least one order. Remove it from the storefront by zeroing stock or use a new listing instead of deleting.",
+        },
+        { status: 409 },
+      );
+    }
   }
 
   await db.delete(products).where(eq(products.id, id));

@@ -1426,7 +1426,7 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
                         </button>
                         <button
                           type="button"
-                          className="text-xs font-medium text-red-300 hover:underline"
+                          className="rounded-lg border border-red-500/35 bg-red-950/40 px-2.5 py-1 text-xs font-medium text-red-200 hover:bg-red-950/70"
                           onClick={() => confirmDeleteProduct(product.id, product.name)}
                         >
                           Delete
