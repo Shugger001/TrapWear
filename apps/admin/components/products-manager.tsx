@@ -530,12 +530,37 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
         setNotice("Product updated.");
       } else {
         const p = data.product as Omit<ProductRow, "variantsCount" | "totalStock" | "variants"> | undefined;
+        const dv = data.defaultVariant as
+          | {
+              id: string;
+              productId: string;
+              sku: string;
+              label: string;
+              priceModifierCents: number;
+              stock: number;
+              options: Record<string, string> | null;
+            }
+          | null
+          | undefined;
         if (p) {
+          const variants: VariantRow[] = dv
+            ? [
+                {
+                  id: dv.id,
+                  productId: dv.productId,
+                  sku: dv.sku,
+                  label: dv.label,
+                  priceModifierCents: dv.priceModifierCents,
+                  stock: dv.stock,
+                  options: (dv.options ?? {}) as Record<string, string>,
+                },
+              ]
+            : [];
           const row: ProductRow = {
             ...(p as ProductRow),
-            variants: [],
-            variantsCount: 0,
-            totalStock: 0,
+            variants,
+            variantsCount: variants.length,
+            totalStock: variants.reduce((s, v) => s + v.stock, 0),
           };
           setProducts((rows) => [row, ...rows]);
         }

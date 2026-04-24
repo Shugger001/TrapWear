@@ -48,31 +48,46 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Slug already exists." }, { status: 409 });
   }
 
-  const [created] = await db
-    .insert(products)
-    .values({
-      slug,
-      name: payload.name.trim(),
-      description: payload.description.trim(),
-      type: payload.type,
-      basePriceCents: payload.basePriceCents,
-      images: payload.images ?? [],
-    })
-    .returning();
-
-  if (!created) {
+  try {
+    const { created, defaultVariant } = await db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(products)
+        .values({
+          slug,
+          name: payload.name.trim(),
+          description: payload.description.trim(),
+          type: payload.type,
+          basePriceCents: payload.basePriceCents,
+          images: payload.images ?? [],
+        })
+        .returning();
+      if (!row) {
+        throw new Error("insert product returned no row");
+      }
+      const [variant] = await tx
+        .insert(productVariants)
+        .values({
+          productId: row.id,
+          sku: `tw-v-${row.id.replace(/-/g, "")}`.slice(0, 120),
+          label: "Default",
+          priceModifierCents: 0,
+          stock: 1,
+          options: {},
+        })
+        .returning();
+      await tx.insert(auditLogs).values({
+        actorUserId: auth.session.userId,
+        action: "product.create",
+        entity: "product",
+        entityId: row.id,
+        meta: { slug: row.slug, type: row.type },
+      });
+      return { created: row, defaultVariant: variant };
+    });
+    return NextResponse.json({ ok: true, product: created, defaultVariant: defaultVariant ?? null });
+  } catch {
     return NextResponse.json({ error: "Could not create product" }, { status: 500 });
   }
-
-  await db.insert(auditLogs).values({
-    actorUserId: auth.session.userId,
-    action: "product.create",
-    entity: "product",
-    entityId: created.id,
-    meta: { slug: created.slug, type: created.type },
-  });
-
-  return NextResponse.json({ ok: true, product: created });
 }
 
 export async function PATCH(req: Request) {
