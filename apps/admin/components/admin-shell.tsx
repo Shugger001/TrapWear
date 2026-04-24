@@ -60,7 +60,7 @@ export function AdminShell({ children, isSuperadmin }: { children: React.ReactNo
           </div>
         </header>
 
-        <div className="relative flex-1 overflow-x-auto bg-gradient-to-r from-slate-100 to-slate-200/70 pb-[env(safe-area-inset-bottom)]">
+        <div className="relative min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-r from-slate-100 to-slate-200/70 pb-[env(safe-area-inset-bottom)]">
           <div className="relative">{children}</div>
         </div>
       </div>

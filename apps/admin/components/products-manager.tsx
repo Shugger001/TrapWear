@@ -1380,27 +1380,33 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
           ) : null}
         </div>
 
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[720px] text-left text-sm">
+        <div className="hidden md:block">
+          <p className="mb-3 text-center text-xs text-slate-500">
+            Use <span className="font-semibold text-red-200">Delete</span> under each product name to remove it from the
+            storefront.
+          </p>
+          <div className="max-w-full overflow-x-auto">
+            <table className="w-full min-w-[600px] text-left text-sm">
             <thead className="border-b border-slate-800 bg-slate-900/90 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
               <tr>
-                <th className="w-[1%] whitespace-nowrap px-4 py-3">Actions</th>
-                <th className="px-5 py-3">Product</th>
-                <th className="px-5 py-3">Type</th>
-                <th className="px-5 py-3">Base price</th>
-                <th className="px-5 py-3">Variants</th>
-                <th className="px-5 py-3">Total stock</th>
+                <th className="px-4 py-3 pl-0 sm:px-5 sm:pl-0">Product</th>
+                <th className="px-2 py-3 sm:px-5">Type</th>
+                <th className="px-2 py-3 sm:px-5">Base price</th>
+                <th className="px-2 py-3 sm:px-5">Variants</th>
+                <th className="px-2 py-3 pr-0 sm:px-5 sm:pr-0">Total stock</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((product, idx) => (
                 <Fragment key={product.id}>
                   <tr className={`border-b border-slate-800/80 text-slate-200 ${idx % 2 === 1 ? "bg-slate-900/40" : ""}`}>
-                    <td className="w-[1%] whitespace-nowrap border-r border-slate-800/80 px-4 py-3.5 align-top">
-                      <div className="flex min-w-[9.5rem] flex-col items-stretch gap-1.5">
+                    <td className="px-4 py-3.5 pl-0 align-top sm:px-5 sm:pl-0">
+                      <p className="font-medium text-white">{product.name}</p>
+                      <p className="mt-1 max-w-[20rem] truncate text-xs text-slate-500">{product.slug}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
                         <button
                           type="button"
-                          className={`rounded-lg px-2 py-1.5 text-xs font-medium ${
+                          className={`inline-flex min-h-9 min-w-0 items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium ${
                             expandedProductId === product.id
                               ? "bg-indigo-500/25 text-indigo-200 ring-1 ring-indigo-400/40"
                               : "text-indigo-200 ring-1 ring-slate-600 hover:bg-slate-800"
@@ -1411,14 +1417,14 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
                         </button>
                         <button
                           type="button"
-                          className="rounded-lg px-2 py-1.5 text-xs font-medium text-indigo-200 ring-1 ring-slate-600 hover:bg-slate-800"
+                          className="inline-flex min-h-9 items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium text-indigo-200 ring-1 ring-slate-600 hover:bg-slate-800"
                           onClick={() => loadForEdit(product)}
                         >
                           Edit
                         </button>
                         <button
                           type="button"
-                          className="rounded-lg border border-red-500/40 bg-red-950/50 px-2 py-1.5 text-xs font-semibold text-red-100 hover:bg-red-900/50"
+                          className="inline-flex min-h-9 min-w-[5.5rem] items-center justify-center rounded-lg border-2 border-red-400/60 bg-red-950/60 px-3 py-1.5 text-xs font-bold tracking-wide text-red-100 shadow-sm hover:bg-red-900/50"
                           onClick={() => confirmDeleteProduct(product.id, product.name)}
                         >
                           Delete
@@ -1427,24 +1433,22 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
                           href={`${props.siteUrl}/products/${product.slug}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="rounded-lg px-2 py-1.5 text-center text-xs font-medium text-slate-200 ring-1 ring-slate-600 hover:bg-slate-800"
+                          className="inline-flex min-h-9 items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium text-slate-200 ring-1 ring-slate-600 hover:bg-slate-800"
                         >
-                          View store
+                          View
                         </a>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5">
-                      <p className="font-medium text-white">{product.name}</p>
-                      <p className="mt-1 max-w-md truncate text-xs text-slate-500">{product.slug}</p>
+                    <td className="px-2 py-3.5 align-top capitalize sm:px-5">{product.type}</td>
+                    <td className="px-2 py-3.5 align-top tabular-nums sm:px-5">
+                      {formatMoneyCents(product.basePriceCents)}
                     </td>
-                    <td className="px-5 py-3.5">{product.type}</td>
-                    <td className="px-5 py-3.5 tabular-nums">{formatMoneyCents(product.basePriceCents)}</td>
-                    <td className="px-5 py-3.5">{product.variantsCount}</td>
-                    <td className="px-5 py-3.5">{product.totalStock}</td>
+                    <td className="px-2 py-3.5 align-top sm:px-5">{product.variantsCount}</td>
+                    <td className="px-2 py-3.5 align-top pr-0 sm:px-5 sm:pr-0">{product.totalStock}</td>
                   </tr>
                   {expandedProductId === product.id ? (
                     <tr className="border-b border-slate-800/80 bg-slate-950/40">
-                      <td colSpan={6} className="px-5 py-4">
+                      <td colSpan={5} className="px-4 py-4 pl-0 sm:px-5 sm:pl-0">
                         <div className="space-y-4">
                           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Variant SKUs</p>
                           <div className="overflow-x-auto rounded-xl border border-slate-800">
@@ -1648,13 +1652,14 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
               ))}
               {filtered.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-12 text-center text-slate-500" colSpan={6}>
+                  <td className="px-5 py-12 text-center text-slate-500" colSpan={5}>
                     No products match your filters.
                   </td>
                 </tr>
               ) : null}
             </tbody>
           </table>
+          </div>
         </div>
       </section>
     </div>
