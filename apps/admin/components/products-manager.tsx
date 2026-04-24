@@ -1381,37 +1381,29 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
         </div>
 
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[860px] text-left text-sm">
+          <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-slate-800 bg-slate-900/90 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
               <tr>
+                <th className="w-[1%] whitespace-nowrap px-4 py-3">Actions</th>
                 <th className="px-5 py-3">Product</th>
                 <th className="px-5 py-3">Type</th>
                 <th className="px-5 py-3">Base price</th>
                 <th className="px-5 py-3">Variants</th>
                 <th className="px-5 py-3">Total stock</th>
-                <th className="px-5 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((product, idx) => (
                 <Fragment key={product.id}>
                   <tr className={`border-b border-slate-800/80 text-slate-200 ${idx % 2 === 1 ? "bg-slate-900/40" : ""}`}>
-                    <td className="px-5 py-3.5">
-                      <p className="font-medium text-white">{product.name}</p>
-                      <p className="mt-1 max-w-md truncate text-xs text-slate-500">{product.slug}</p>
-                    </td>
-                    <td className="px-5 py-3.5">{product.type}</td>
-                    <td className="px-5 py-3.5 tabular-nums">{formatMoneyCents(product.basePriceCents)}</td>
-                    <td className="px-5 py-3.5">{product.variantsCount}</td>
-                    <td className="px-5 py-3.5">{product.totalStock}</td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex flex-wrap items-center gap-2">
+                    <td className="w-[1%] whitespace-nowrap border-r border-slate-800/80 px-4 py-3.5 align-top">
+                      <div className="flex min-w-[9.5rem] flex-col items-stretch gap-1.5">
                         <button
                           type="button"
-                          className={`rounded-lg px-2 py-1 text-xs font-medium ${
+                          className={`rounded-lg px-2 py-1.5 text-xs font-medium ${
                             expandedProductId === product.id
                               ? "bg-indigo-500/25 text-indigo-200 ring-1 ring-indigo-400/40"
-                              : "text-indigo-300 hover:underline"
+                              : "text-indigo-200 ring-1 ring-slate-600 hover:bg-slate-800"
                           }`}
                           onClick={() => toggleVariants(product.id)}
                         >
@@ -1419,14 +1411,14 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
                         </button>
                         <button
                           type="button"
-                          className="text-xs font-medium text-indigo-300 hover:underline"
+                          className="rounded-lg px-2 py-1.5 text-xs font-medium text-indigo-200 ring-1 ring-slate-600 hover:bg-slate-800"
                           onClick={() => loadForEdit(product)}
                         >
                           Edit
                         </button>
                         <button
                           type="button"
-                          className="rounded-lg border border-red-500/35 bg-red-950/40 px-2.5 py-1 text-xs font-medium text-red-200 hover:bg-red-950/70"
+                          className="rounded-lg border border-red-500/40 bg-red-950/50 px-2 py-1.5 text-xs font-semibold text-red-100 hover:bg-red-900/50"
                           onClick={() => confirmDeleteProduct(product.id, product.name)}
                         >
                           Delete
@@ -1435,12 +1427,20 @@ export function ProductsManager(props: { initialProducts: ProductRow[]; siteUrl:
                           href={`${props.siteUrl}/products/${product.slug}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs font-medium text-slate-300 hover:underline"
+                          className="rounded-lg px-2 py-1.5 text-center text-xs font-medium text-slate-200 ring-1 ring-slate-600 hover:bg-slate-800"
                         >
-                          View
+                          View store
                         </a>
                       </div>
                     </td>
+                    <td className="px-5 py-3.5">
+                      <p className="font-medium text-white">{product.name}</p>
+                      <p className="mt-1 max-w-md truncate text-xs text-slate-500">{product.slug}</p>
+                    </td>
+                    <td className="px-5 py-3.5">{product.type}</td>
+                    <td className="px-5 py-3.5 tabular-nums">{formatMoneyCents(product.basePriceCents)}</td>
+                    <td className="px-5 py-3.5">{product.variantsCount}</td>
+                    <td className="px-5 py-3.5">{product.totalStock}</td>
                   </tr>
                   {expandedProductId === product.id ? (
                     <tr className="border-b border-slate-800/80 bg-slate-950/40">
